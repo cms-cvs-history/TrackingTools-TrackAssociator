@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //
 // Package:    TrackAssociator
-// Class:      testTrackAssociator
+// Class:      TestTrackAssociator
 // 
 /*
 
@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: MuonTest.cc,v 1.1 2006/06/09 17:30:23 dmytro Exp $
+// $Id: TestTrackAssociator.cc,v 1.1 2006/06/24 04:56:07 dmytro Exp $
 //
 //
 
@@ -74,40 +74,65 @@
 
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 
+#include <boost/regex.hpp>
+
 #include "TrackingTools/TrackAssociator/interface/TrackAssociator.h"
 #include "TrackingTools/TrackAssociator/interface/TimerStack.h"
 
-class testTrackAssociator : public edm::EDAnalyzer {
+class TestTrackAssociator : public edm::EDAnalyzer {
  public:
-   explicit testTrackAssociator(const edm::ParameterSet&);
-   virtual ~testTrackAssociator(){};
+   explicit TestTrackAssociator(const edm::ParameterSet&);
+   virtual ~TestTrackAssociator(){};
    
    virtual void analyze (const edm::Event&, const edm::EventSetup&);
 
  private:
    TrackAssociator trackAssociator_;
+   bool useEcal_;
+   bool useHcal_;
+   bool useMuon_;
 };
 
-testTrackAssociator::testTrackAssociator(const edm::ParameterSet& iConfig)
+TestTrackAssociator::TestTrackAssociator(const edm::ParameterSet& iConfig)
 {
-   trackAssociator_.addDataLabels("EBRecHitCollection","ecalrechit","EcalRecHitsEB");
-   trackAssociator_.addDataLabels("CaloTowerCollection","towermaker");
-   trackAssociator_.addDataLabels("DTRecSegment4DCollection","recseg4dbuilder");
+   useEcal_ = iConfig.getParameter<bool>("useEcal");
+   useHcal_ = iConfig.getParameter<bool>("useHcal");
+   useMuon_ = iConfig.getParameter<bool>("useMuon");
+   
+   // Fill data labels
+   std::vector<std::string> labels = iConfig.getParameter<std::vector<std::string> >("labels");
+   boost::regex regExp1 ("([^\\s,]+)[\\s,]+([^\\s,]+)$");
+   boost::regex regExp2 ("([^\\s,]+)[\\s,]+([^\\s,]+)[\\s,]+([^\\s,]+)$");
+   boost::smatch matches;
+	
+
+   for(std::vector<std::string>::const_iterator label = labels.begin(); label != labels.end(); label++) {
+      if (boost::regex_match(*label,matches,regExp1))
+	trackAssociator_.addDataLabels(matches[1],matches[2]);
+      else if (boost::regex_match(*label,matches,regExp2))
+	trackAssociator_.addDataLabels(matches[1],matches[2],matches[3]);
+      else
+	edm::LogError("ConfigurationError") << "Failed to parse label:\n" << *label << "Skipped.\n";
+   }
+   
+   // trackAssociator_.addDataLabels("EBRecHitCollection","ecalrechit","EcalRecHitsEB");
+   // trackAssociator_.addDataLabels("CaloTowerCollection","towermaker");
+   // trackAssociator_.addDataLabels("DTRecSegment4DCollection","recseg4dbuilder");
    
    trackAssociator_.useDefaultPropagator();
 }
 
-void testTrackAssociator::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void TestTrackAssociator::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-   
+
    // get list of tracks and their vertices
    Handle<EmbdSimTrackContainer> simTracks;
    iEvent.getByType<EmbdSimTrackContainer>(simTracks);
    
    Handle<EmbdSimVertexContainer> simVertices;
    iEvent.getByType<EmbdSimVertexContainer>(simVertices);
-   if (! simVertices.isValid() ) throw cms::Exception("FatalError") << "No tracks found\n";
+   if (! simVertices.isValid() ) throw cms::Exception("FatalError") << "No vertices found\n";
    
    // loop over simulated tracks
    for(EmbdSimTrackContainer::const_iterator tracksCI = simTracks->begin(); 
@@ -123,6 +148,9 @@ void testTrackAssociator::analyze( const edm::Event& iEvent, const edm::EventSet
       EmbdSimVertex vertex(Hep3Vector(0.,0.,0.),0);
       if (vertexIndex >= 0) vertex = (*simVertices)[vertexIndex];
       
+      // skip tracks originated away from the IP
+      if (vertex.position().rho() > 50) continue;
+      
       std::cout << "\n-------------------------------------------------------\n Track (pt,eta,phi): " << tracksCI->momentum().perp() << " , " <<
 	tracksCI->momentum().eta() << " , " << tracksCI->momentum().phi() << std::endl;
       
@@ -134,9 +162,9 @@ void testTrackAssociator::analyze( const edm::Event& iEvent, const edm::EventSet
 				       
       // Get HCAL energy in more generic way
       TrackAssociator::AssociatorParameters parameters;
-      parameters.useEcal = true ;
-      parameters.useHcal = true ;
-      parameters.useMuon = true ;
+      parameters.useEcal = useEcal_ ;
+      parameters.useHcal = useHcal_ ;
+      parameters.useMuon = useMuon_ ;
       parameters.dRHcal = 0.03;
       parameters.dRHcal = 0.07;
       parameters.dRMuon = 0.1;
@@ -149,36 +177,38 @@ void testTrackAssociator::analyze( const edm::Event& iEvent, const edm::EventSet
       std::cout << "ECAL, energy of crossed cells: " << info.ecalEnergy() << " GeV" << std::endl;
       std::cout << "ECAL, number of cells in the cone: " << info.ecalRecHits.size() << std::endl;
       std::cout << "ECAL, energy in the cone: " << info.ecalConeEnergy() << " GeV" << std::endl;
-      std::cout << "ECAL, trajectory point (z,rho,eta,phi): " << info.trkGlobPosAtEcal.z() << ", "
-	<< info.trkGlobPosAtEcal.rho() << " , "	<< info.trkGlobPosAtEcal.eta() << " , " 
+      std::cout << "ECAL, trajectory point (z,R,eta,phi): " << info.trkGlobPosAtEcal.z() << ", "
+	<< info.trkGlobPosAtEcal.R() << " , "	<< info.trkGlobPosAtEcal.eta() << " , " 
 	<< info.trkGlobPosAtEcal.phi()<< std::endl;
       
       std::cout << "HCAL, number of crossed towers: " << info.crossedTowers.size() << std::endl;
       std::cout << "HCAL, energy of crossed towers: " << info.hcalEnergy() << " GeV" << std::endl;
       std::cout << "HCAL, number of towers in the cone: " << info.towers.size() << std::endl;
       std::cout << "HCAL, energy in the cone: " << info.hcalConeEnergy() << " GeV" << std::endl;
-      std::cout << "HCAL, trajectory point (z,rho,eta,phi): " << info.trkGlobPosAtHcal.z() << ", "
-	<< info.trkGlobPosAtHcal.rho() << " , "	<< info.trkGlobPosAtHcal.eta() << " , "
+      std::cout << "HCAL, trajectory point (z,R,eta,phi): " << info.trkGlobPosAtHcal.z() << ", "
+	<< info.trkGlobPosAtHcal.R() << " , "	<< info.trkGlobPosAtHcal.eta() << " , "
 	<< info.trkGlobPosAtHcal.phi()<< std::endl;
       
-      std::cout << "Drift Tubes segments: " << std::endl;
-      for(std::vector<MuonSegmentMatch>::const_iterator segmentItr=info.segments.begin(); 
-	 segmentItr!=info.segments.end(); segmentItr++)
-	{
-	   std::cout << "\t DT, trajectory point (z,rho,eta,phi): " 
-	     << segmentItr->trajectoryGlobalPosition.z() << ", "
-	     << segmentItr->trajectoryGlobalPosition.rho() << ", "
-	     << segmentItr->trajectoryGlobalPosition.eta() << ", "
-	     << segmentItr->trajectoryGlobalPosition.phi() << std::endl;
+      if (useMuon_) {
+	 std::cout << "Drift Tubes segments: " << std::endl;
+	 for(std::vector<MuonSegmentMatch>::const_iterator segmentItr=info.segments.begin(); 
+	     segmentItr!=info.segments.end(); segmentItr++)
+	   {
+	      std::cout << "\t DT, trajectory point (z,R,eta,phi): " 
+		<< segmentItr->trajectoryGlobalPosition.z() << ", "
+		<< segmentItr->trajectoryGlobalPosition.R() << ", "
+		<< segmentItr->trajectoryGlobalPosition.eta() << ", "
+		<< segmentItr->trajectoryGlobalPosition.phi() << std::endl;
 
-	   std::cout << "\t DT,segment position (z,rho,eta,phi): " 
+	      std::cout << "\t DT,segment position (z,R,eta,phi): " 
 	     << segmentItr->segmentGlobalPosition.z() << ", "
-	     << segmentItr->segmentGlobalPosition.rho() << ", "
-	     << segmentItr->segmentGlobalPosition.eta() << ", "
-	     << segmentItr->segmentGlobalPosition.phi() << std::endl;
-	}
+		<< segmentItr->segmentGlobalPosition.R() << ", "
+		<< segmentItr->segmentGlobalPosition.eta() << ", "
+		<< segmentItr->segmentGlobalPosition.phi() << std::endl;
+	   }
+      }
    }
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(testTrackAssociator)
+DEFINE_FWK_MODULE(TestTrackAssociator)

@@ -34,9 +34,13 @@
 <use name=TrackPropagation/SteppingHelixPropagator>
 
 <use name=TrackingTools/TrackAssociator>
-   
-<library file=testTrackAssociator.cc name=testTA>
-  <flags SEAL_PLUGIN_NAME="testTA">
+# <use name=MuonTest/MuonReco>
+
+<library file=TestTrackAssociator.cc name=testTrackAssociator>
+  <flags SEAL_PLUGIN_NAME="testTrackAssociator">
+</library>
+<library file=TestMuonProducer.cc name=testMuonProducer>
+  <flags SEAL_PLUGIN_NAME="testMuonProducer">
 </library>
 # add debug symbols
 # <Flags CXXFLAGS=-g>

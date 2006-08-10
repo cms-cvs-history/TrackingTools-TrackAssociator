@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: MuonTest.cc,v 1.1 2006/06/09 17:30:23 dmytro Exp $
+// $Id: TestMuonProducer.cc,v 1.1 2006/08/10 11:40:00 dmytro Exp $
 //
 //
 
@@ -168,15 +168,14 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       
       // Ignore vertex. The track can only be initialized at POCA -
       // too much trouble at this point
-      reco::perigee::Parameters h(0,trackP3.theta(),trackP3.phi(),0,0,trackP3.perp());
-      reco::perigee::Covariance c;
+      reco::TrackBase::ParameterVector par(0,trackP3.theta(),trackP3.phi(),0,0);
+      reco::TrackBase::CovarianceMatrix c;
 
-      // TrackBase( double chi2, double ndof, 
-      //            int found, int invalid, int lost,
-      //            const Parameters &, const Covariance & );
+      // TrackBase( double chi2, double ndof,
+      // const ParameterVector & par, double pt, const CovarianceMatrix & cov )
       
-      reco::TestMuon aMuon(0, 0, 0, 0, 0, h, c);
-      
+      reco::TestMuon aMuon(0, 0, par, trackP3.perp() , c);
+     
       TrackAssociator::AssociatorParameters parameters;
       parameters.useEcal = useEcal_ ;
       parameters.useHcal = useHcal_ ;

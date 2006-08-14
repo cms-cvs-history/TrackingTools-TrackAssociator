@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TestMuonProducer.cc,v 1.1 2006/08/10 11:40:00 dmytro Exp $
+// $Id: TestMuonProducer.cc,v 1.2 2006/08/10 13:33:37 dmytro Exp $
 //
 //
 
@@ -100,6 +100,7 @@ class TestMuonProducer : public edm::EDProducer {
 TestMuonProducer::TestMuonProducer(const edm::ParameterSet& iConfig)
 {
    produces<reco::TestMuonCollection>("muons");
+   produces<reco::TrackCollection>("tracks");
 
    useEcal_ = iConfig.getParameter<bool>("useEcal");
    useHcal_ = iConfig.getParameter<bool>("useHcal");
@@ -133,6 +134,8 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 {
    using namespace edm;
    
+   std::auto_ptr<reco::TrackCollection> outputTracks(new reco::TrackCollection);
+   RefProd<reco::TrackCollection> refOutputTracks = iEvent.getRefBeforePut<reco::TrackCollection>("tracks");
    std::auto_ptr<reco::TestMuonCollection> outputMuons(new reco::TestMuonCollection);
 
    TimerStack timers;
@@ -150,6 +153,7 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
    
    timers.clean_stack();
    
+   uint i(0);
    // loop over simulated tracks
    for(SimTrackContainer::const_iterator tracksCI = simTracks->begin(); 
        tracksCI != simTracks->end(); tracksCI++){
@@ -157,7 +161,10 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       Hep3Vector trackP3 = tracksCI->momentum().vect();
 
       // skip low Pt tracks
-      if (tracksCI->momentum().perp() < 5) continue;
+      if (tracksCI->momentum().perp() < 5) {
+	 std::cout << "Skipped low Pt track (Pt: " << tracksCI->momentum().perp() << ")" <<std::endl;
+	 continue;
+      }
       
       // get vertex
       int vertexIndex = tracksCI->vertIndex();
@@ -165,6 +172,12 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       
       SimVertex vertex(Hep3Vector(0.,0.,0.),0);
       if (vertexIndex >= 0) vertex = (*simVertices)[vertexIndex];
+
+      // skip tracks originated away from the IP
+      if (vertex.position().rho() > 50) {
+	 std::cout << "Skipped track originated away from IP: " <<vertex.position().rho()<<std::endl;
+	 continue;
+      }
       
       // Ignore vertex. The track can only be initialized at POCA -
       // too much trouble at this point
@@ -174,8 +187,15 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       // TrackBase( double chi2, double ndof,
       // const ParameterVector & par, double pt, const CovarianceMatrix & cov )
       
-      reco::TestMuon aMuon(0, 0, par, trackP3.perp() , c);
-     
+      // 
+      reco::Track aTrack(0, 0, par, trackP3.perp() , c);
+      outputTracks->push_back(aTrack);
+      
+      reco::TestMuon aMuon;
+      // aMuon.setTrack(reco::TrackRef(trackHandle,i));
+      aMuon.setTrack(reco::TrackRef(refOutputTracks,i));
+      i++;
+      
       TrackAssociator::AssociatorParameters parameters;
       parameters.useEcal = useEcal_ ;
       parameters.useHcal = useHcal_ ;
@@ -225,6 +245,7 @@ void TestMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       std::cout << "number of muon matches: " << aMuon.matches().size() << std::endl;
       outputMuons->push_back(aMuon);
    }
+   iEvent.put(outputTracks,"tracks");
    iEvent.put(outputMuons,"muons");
 }
 

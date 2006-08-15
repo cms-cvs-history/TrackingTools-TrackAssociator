@@ -42,5 +42,8 @@
 <library file=TestMuonProducer.cc name=testMuonProducer>
   <flags SEAL_PLUGIN_NAME="testMuonProducer">
 </library>
+#<library file=MuonIdProducer.cc name=muonIdProducer>
+#  <flags SEAL_PLUGIN_NAME="muonIdProducer">
+#</library>
 # add debug symbols
 # <Flags CXXFLAGS=-g>

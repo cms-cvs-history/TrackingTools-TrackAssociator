@@ -39,6 +39,9 @@
 <library file=TestTrackAssociator.cc name=testTrackAssociator>
   <flags SEAL_PLUGIN_NAME="testTrackAssociator">
 </library>
+<library file=TestTrackAssociatorProducer.cc name=testTrackAssociatorProducer>
+  <flags SEAL_PLUGIN_NAME="testTrackAssociatorProducer">
+</library>
 <library file=TestMuonProducer.cc name=testMuonProducer>
   <flags SEAL_PLUGIN_NAME="testMuonProducer">
 </library>

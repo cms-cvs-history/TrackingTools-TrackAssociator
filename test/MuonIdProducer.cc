@@ -13,7 +13,7 @@
 */
 //
 // Original Author:  Dmytro Kovalskyi
-// $Id: MuonIdProducer.cc,v 1.3 2006/08/14 16:19:37 dmytro Exp $
+// $Id: MuonIdProducer.cc,v 1.1 2006/08/15 23:03:53 dmytro Exp $
 //
 //
 
@@ -40,7 +40,7 @@
 #include "TrackingTools/TrackAssociator/interface/TimerStack.h"
 
 #include <boost/regex.hpp>
-#include "TrackingTools/TrackAssociator/interface/MuonIdProducer.h"
+#include "TrackingTools/TrackAssociator/test/MuonIdProducer.h"
 
 MuonIdProducer::MuonIdProducer(const edm::ParameterSet& iConfig)
 {

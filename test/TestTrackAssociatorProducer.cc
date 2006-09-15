@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TestTrackAssociatorProducer.cc,v 1.2 2006/08/17 18:22:44 jribnik Exp $
+// $Id: TestTrackAssociatorProducer.cc,v 1.3 2006/08/21 20:26:16 jribnik Exp $
 //
 //
 
@@ -79,6 +79,8 @@
 #include "TrackingTools/TrackAssociator/interface/TimerStack.h"
 #include "TrackingTools/TrackAssociator/interface/TrackDetMatchInfoCollection.h"
 
+#include "CLHEP/HepPDT/ParticleID.hh"
+
 class TestTrackAssociatorProducer : public edm::EDProducer {
   public:
     explicit TestTrackAssociatorProducer(const edm::ParameterSet&);
@@ -134,7 +136,7 @@ TestTrackAssociatorProducer::TestTrackAssociatorProducer(const edm::ParameterSet
 void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
-  using reco::TrackCollection;
+  using namespace reco;
 
   std::auto_ptr<TrackDetMatchInfoCollection> simTrackOutput(new TrackDetMatchInfoCollection());
   std::auto_ptr<TrackDetMatchInfoCollection> recTrackOutput(new TrackDetMatchInfoCollection());
@@ -153,7 +155,15 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
 
     // loop over simulated tracks
     std::cout << "Number of simulated tracks found in the event: " << simTracks->size() << std::endl;
+    SimTrackContainer::size_type itemIndex = 0;
     for(SimTrackContainer::const_iterator tracksCI = simTracks->begin(); tracksCI != simTracks->end(); ++tracksCI) {
+
+      SimTrackRef simTrackRef(simTracks, itemIndex);
+      itemIndex++;
+
+      // only propagate charged tracks!
+      HepPDT::ParticleID id(tracksCI->type());
+      if(!id.threeCharge()) continue;
 
       // skip low Pt tracks
       if (tracksCI->momentum().perp() < 5) {
@@ -175,7 +185,6 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
 
       std::cout << "\n-------------------------------------------------------\n Track (pt,eta,phi): " << tracksCI->momentum().perp() << " , " << tracksCI->momentum().eta() << " , " << tracksCI->momentum().phi() << std::endl;
 
-      // Get HCAL energy in more generic way
       TrackAssociator::AssociatorParameters parameters;
       parameters.useEcal = useEcal_ ;
       parameters.useHcal = useHcal_ ;
@@ -188,6 +197,8 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
           trackAssociator_.getFreeTrajectoryState(iSetup, *tracksCI, vertex),
           parameters);
 
+      info.simTrackRef_ = simTrackRef; 
+
       simTrackOutput->push_back(info);
     }//for
   }//if
@@ -199,7 +210,11 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
 
   // loop over reconstructed tracks
   std::cout << "Number of reconstructed tracks found in the event: " << recoTracks->size() << std::endl;
+  TrackCollection::size_type itemIndex = 0;
   for(TrackCollection::const_iterator tracksCI = recoTracks->begin(); tracksCI != recoTracks->end(); ++tracksCI) {
+
+    TrackRef trackRef(recoTracks, itemIndex);
+    itemIndex++;
 
     // skip low Pt tracks
     if(tracksCI->pt() < 5.) {
@@ -227,6 +242,8 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
     TrackDetMatchInfo info = trackAssociator_.associate(iEvent, iSetup,
         trackAssociator_.getFreeTrajectoryState(iSetup, *tracksCI),
         parameters);
+
+    info.trackRef_ = trackRef;
 
     recTrackOutput->push_back(info);
   }//for

@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TestTrackAssociatorProducer.cc,v 1.3 2006/08/21 20:26:16 jribnik Exp $
+// $Id: TestTrackAssociatorProducer.cc,v 1.4 2006/09/15 18:29:59 jribnik Exp $
 //
 //
 
@@ -166,7 +166,7 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
       if(!id.threeCharge()) continue;
 
       // skip low Pt tracks
-      if (tracksCI->momentum().perp() < 5) {
+      if (tracksCI->momentum().perp() < 2.) {
         std::cout << "Skipped low Pt track (Pt: " << tracksCI->momentum().perp() << ")" <<std::endl;
         continue;
       }
@@ -191,7 +191,7 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
       parameters.useMuon = useMuon_ ;
       parameters.dREcal = 0.03;
       parameters.dRHcal = 0.07;
-      parameters.dRMuon = 0.1;
+      parameters.dRMuon = 0.3;
 
       TrackDetMatchInfo info = trackAssociator_.associate(iEvent, iSetup,
           trackAssociator_.getFreeTrajectoryState(iSetup, *tracksCI, vertex),
@@ -217,7 +217,7 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
     itemIndex++;
 
     // skip low Pt tracks
-    if(tracksCI->pt() < 5.) {
+    if(tracksCI->pt() < 2.) {
       std::cout << "Skipped low Pt track (Pt: " << tracksCI->pt() << ")" <<std::endl;
       continue;
     }
@@ -237,7 +237,7 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
     parameters.useMuon = useMuon_ ;
     parameters.dREcal = 0.03;
     parameters.dRHcal = 0.07;
-    parameters.dRMuon = 0.1;
+    parameters.dRMuon = 0.3;
 
     TrackDetMatchInfo info = trackAssociator_.associate(iEvent, iSetup,
         trackAssociator_.getFreeTrajectoryState(iSetup, *tracksCI),

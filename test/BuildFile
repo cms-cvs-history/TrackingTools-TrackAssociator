@@ -36,8 +36,8 @@
 <use name=TrackingTools/TrackAssociator>
 # <use name=MuonTest/MuonReco>
 
-<library file=TestTrackAssociator.cc name=testTrackAssociator>
-  <flags SEAL_PLUGIN_NAME="testTrackAssociator">
+<library file=TestTrackAssociator.cc name=testTrackingToolsTrackAssociator>
+  <flags SEAL_PLUGIN_NAME="testTrackingToolsTrackAssociator">
 </library>
 # <library file=TestTrackAssociatorProducer.cc name=testTrackAssociatorProducer>
 #   <flags SEAL_PLUGIN_NAME="testTrackAssociatorProducer">

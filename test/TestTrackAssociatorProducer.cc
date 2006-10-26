@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TestTrackAssociatorProducer.cc,v 1.4 2006/09/15 18:29:59 jribnik Exp $
+// $Id: TestTrackAssociatorProducer.cc,v 1.5 2006/10/09 18:24:33 jribnik Exp $
 //
 //
 
@@ -252,4 +252,4 @@ void TestTrackAssociatorProducer::produce( edm::Event& iEvent, const edm::EventS
   iEvent.put(recTrackOutput, recoTrackCollectionName_);
 } 
 //define this as a plug-in
-DEFINE_FWK_MODULE(TestTrackAssociatorProducer)
+DEFINE_FWK_MODULE(TestTrackAssociatorProducer);

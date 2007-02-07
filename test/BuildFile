@@ -39,6 +39,9 @@
 <library file=TestTrackAssociator.cc name=testTrackingToolsTrackAssociator>
   <flags SEAL_PLUGIN_NAME="testTrackingToolsTrackAssociator">
 </library>
+<library file=CaloMatchingExample.cc name=testCaloMatchingExample>
+  <flags SEAL_PLUGIN_NAME="testCaloMatchingExample">
+</library>
 # <library file=TestTrackAssociatorProducer.cc name=testTrackAssociatorProducer>
 #   <flags SEAL_PLUGIN_NAME="testTrackAssociatorProducer">
 # </library>

@@ -1,0 +1,33 @@
+# -*-SH-*-
+PSet TrackAssociatorParameters =
+{
+      ### input tags
+      InputTag EBRecHitCollectionLabel       = ecalRecHit:EcalRecHitsEB
+      InputTag EERecHitCollectionLabel       = ecalRecHit:EcalRecHitsEE
+      InputTag CaloTowerCollectionLabel      = towerMaker
+      InputTag HBHERecHitCollectionLabel     = hbhereco
+      InputTag HORecHitCollectionLabel       = horeco
+      InputTag DTRecSegment4DCollectionLabel = dt4DSegments
+      InputTag CSCSegmentCollectionLabel     = cscSegments
+
+      ### preselection requirements
+      # (track trajectory changes in eta-phi are taken into account automatically)
+      double dREcalPreselection = 0.15
+      double dRHcalPreselection = 0.2
+      double dRMuonPreselection = 0.2
+      
+      ### matching requirements 
+      double dREcal = 9999
+      double dRHcal = 9999
+      double dRMuon = 9999
+      double muonMaxDistanceX = 5
+      double muonMaxDistanceY = 5
+      
+      ### association types
+      bool useEcal = true      # RecoHits
+      bool useHcal = true      # RecoHits
+      bool useCalo = false     # CaloTowers
+      bool useHO = true	       # RecoHits
+      bool useMuon = true      # RecoHits
+      bool truthMatch = false  # debugging information
+}

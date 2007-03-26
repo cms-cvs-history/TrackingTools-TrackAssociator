@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.cc,v 1.6 2007/03/08 04:19:26 dmytro Exp $
+// $Id: TrackDetectorAssociator.cc,v 1.7 2007/03/09 14:08:15 dmytro Exp $
 //
 //
 
@@ -76,7 +76,7 @@
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/ErrorFrameTransformer.h"
 
-#include "CLHEP/HepPDT/ParticleID.hh"
+#include "HepPDT/ParticleID.hh"
 //
 // class declaration
 //

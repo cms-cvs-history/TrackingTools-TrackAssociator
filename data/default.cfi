@@ -10,8 +10,11 @@ PSet TrackAssociatorParameters =
       InputTag DTRecSegment4DCollectionLabel = dt4DSegments
       InputTag CSCSegmentCollectionLabel     = cscSegments
 
-      ### preselection requirements
-      # (track trajectory changes in eta-phi are taken into account automatically)
+      ### preselection requirements in theta-phi space
+      # allowed range: 
+      #   dTheta = +/- dR
+      #   dPhi = +/- dR  
+      # (track trajectory changes are taken into account for muons)
       double dREcalPreselection = 0.15
       double dRHcalPreselection = 0.2
       double dRMuonPreselection = 0.2

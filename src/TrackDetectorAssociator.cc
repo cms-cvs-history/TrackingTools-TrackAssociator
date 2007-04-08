@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.cc,v 1.4 2007/02/07 04:29:11 dmytro Exp $
+// $Id: TrackDetectorAssociator.cc,v 1.5 2007/02/19 12:02:40 dmytro Exp $
 //
 //
 
@@ -156,7 +156,7 @@ TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
    // in the barrel, a track should have P_t as low as 3 GeV or smaller
    // If it's necessary, number of points along trajectory can be increased
    cachedTrajectory_.reset_trajectory();
-   cachedTrajectory_.propagateAll(trackOrigin);
+   if ( ! cachedTrajectory_.propagateAll(trackOrigin) ) return info;
    cachedTrajectory_.getEcalTrajectory();
    cachedTrajectory_.getHcalTrajectory();
    cachedTrajectory_.getHOTrajectory();

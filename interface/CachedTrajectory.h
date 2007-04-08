@@ -18,7 +18,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: MuonDetIdAssociator.h,v 1.1 2006/12/19 01:01:00 dmytro Exp $
+// $Id: CachedTrajectory.h,v 1.1 2007/01/21 15:30:35 dmytro Exp $
 //
 //
 
@@ -35,8 +35,8 @@ class CachedTrajectory {
 
    void reset_trajectory();
    
-   // fly through the whole detector
-   void propagateAll(const SteppingHelixStateInfo& initialState);
+   // propagate through the whole detector, returns true if successful
+   bool propagateAll(const SteppingHelixStateInfo& initialState);
    
    void propagateForward(SteppingHelixStateInfo& state, float distance);
 

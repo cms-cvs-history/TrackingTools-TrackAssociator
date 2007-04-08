@@ -3,7 +3,7 @@
 // Package:    TrackAssociator
 // Class:      CachedTrajectory
 // 
-// $Id: CachedTrajectory.cc,v 1.3 2007/01/30 18:40:01 dmytro Exp $
+// $Id: CachedTrajectory.cc,v 1.4 2007/02/07 04:32:40 dmytro Exp $
 //
 //
 
@@ -41,6 +41,8 @@ void CachedTrajectory::propagateForward(SteppingHelixStateInfo& state, float dis
    Surface::RotationType rotation(r11, r12, r13,
 				  r21, r22, r23,
 				  r31, r32, r33);
+   // Surface* target1 = Plane::build(state.position()+vector*distance, rotation).get();
+   // LogTrace("TrackAssociator") << "Surface: " << target1;
    Surface* target = new Plane(state.position()+vector*distance, rotation);
    if( SteppingHelixPropagator* shp = dynamic_cast<SteppingHelixPropagator*>(propagator_) )
      {
@@ -60,14 +62,14 @@ void CachedTrajectory::propagateForward(SteppingHelixStateInfo& state, float dis
 	TrajectoryStateOnSurface stateOnSurface = propagator_->propagate(fts, *target);
 	state = SteppingHelixStateInfo( *(stateOnSurface.freeState()) );
      }
-   
+   delete target;
    // LogTrace("TrackAssociator")
    // << state.position().mag() << " , "   << state.position().eta() << " , "
    // << state.position().phi();
 }
 
 
-void CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
+bool CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
 {
    if ( fullTrajectoryFilled_ ) {
       edm::LogWarning("TrackAssociator") << "Reseting all trajectories. Please call reset_trajectory() explicitely to avoid this message";
@@ -90,6 +92,7 @@ void CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
    }
    LogTrace("TrackAssociator") << "Done with the track propagation in the detector. Number of steps: " << fullTrajectory_.size();
    fullTrajectoryFilled_ = true;
+   return ! fullTrajectory_.empty();
 }
 
 TrajectoryStateOnSurface CachedTrajectory::propagate(const Plane* plane)
@@ -220,7 +223,11 @@ void CachedTrajectory::getTrajectory(std::vector<SteppingHelixStateInfo>& trajec
 				     const float step)
 {
    if ( ! fullTrajectoryFilled_ ) throw cms::Exception("FatalError") << "trajectory is not defined yet. Please use propagateAll first.";
-	
+   if ( fullTrajectory_.empty() ) {
+      LogTrace("TrackAssociator") << "Trajectory is empty. Move on";
+      return;
+   }
+
    if (r1>r2 || z1>z2) {
       LogTrace("TrackAssociator") << "no trajectory is expected to be found since either R1>R2 or L1>L2";
       return;

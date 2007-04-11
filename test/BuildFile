@@ -5,7 +5,7 @@
 <use name=DataFormats/EgammaReco>
 
 <use name=FWCore/Framework>
-<use name=Foundation/PluginManager>
+<use name=FWCore/PluginManager>
 <use name=FWCore/ParameterSet>
 
 # <use name=Geometry/DTGeometry>

@@ -1,5 +1,5 @@
 # -*-SH-*-
-<flags SEAL_PLUGIN_NAME="TrackingToolsTrackAssociator">
+<flags EDM_PLUGIN=1>
 <use name=clhep>
 <use name=DataFormats/Common>
 <use name=DataFormats/TrackReco>
@@ -7,7 +7,7 @@
 <use name=DataFormats/MuonReco>
 
 <use name=FWCore/Framework>
-<use name=Foundation/PluginManager>
+<use name=FWCore/PluginManager>
 <use name=FWCore/ParameterSet>
 
 <use name=Geometry/DTGeometry>
@@ -40,4 +40,4 @@
 </export>
    
 # add debug symbols
-# <Flags CXXFLAGS=-g>
+# <Flags CXXFLAGS="-g -O0">

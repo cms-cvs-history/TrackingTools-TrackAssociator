@@ -37,19 +37,19 @@
 # <use name=MuonTest/MuonReco>
 
 <library file=TestTrackAssociator.cc name=testTrackingToolsTrackAssociator>
-  <flags SEAL_PLUGIN_NAME="testTrackingToolsTrackAssociator">
+  <flags EDM_PLUGIN=1>
 </library>
 <library file=CaloMatchingExample.cc name=testCaloMatchingExample>
-  <flags SEAL_PLUGIN_NAME="testCaloMatchingExample">
+  <flags EDM_PLUGIN=1>
 </library>
 # <library file=TestTrackAssociatorProducer.cc name=testTrackAssociatorProducer>
-#   <flags SEAL_PLUGIN_NAME="testTrackAssociatorProducer">
+#   <flags EDM_PLUGIN=1>
 # </library>
 # <library file=TestMuonProducer.cc name=testMuonProducer>
-#   <flags SEAL_PLUGIN_NAME="testMuonProducer">
+#   <flags EDM_PLUGIN=1>
 # </library>
 # <library file=MuonIdProducer.cc name=muonIdProducer>
-#   <flags SEAL_PLUGIN_NAME="muonIdProducer">
+#   <flags EDM_PLUGIN=1>
 # </library>
 
 # add debug symbols

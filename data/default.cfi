@@ -1,4 +1,12 @@
 # -*-SH-*-
+
+###
+### Default Parameters
+###
+###   Purpose: extraction of energy deposition and muon matching information
+###            for a minimum ionizing particle. Up to 5x5 energy for ECAL 
+###            and HCAL should be available.
+### 
 PSet TrackAssociatorParameters =
 {
       ### input tags
@@ -15,9 +23,11 @@ PSet TrackAssociatorParameters =
       #   dTheta = +/- dR
       #   dPhi = +/- dR  
       # (track trajectory changes are taken into account for muons)
-      double dREcalPreselection = 0.15
+      double dREcalPreselection = 0.05
       double dRHcalPreselection = 0.2
       double dRMuonPreselection = 0.2
+      bool   accountForTrajectoryChangeCalo = false
+      # bool   accountForTrajectoryChangeMuon = true
       
       ### matching requirements 
       double dREcal = 9999

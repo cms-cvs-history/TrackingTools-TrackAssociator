@@ -5,7 +5,7 @@
 <use name=DataFormats/EgammaReco>
 
 <use name=FWCore/Framework>
-<use name=FWCore/PluginManager>
+<use name=Foundation/PluginManager>
 <use name=FWCore/ParameterSet>
 
 # <use name=Geometry/DTGeometry>
@@ -37,19 +37,19 @@
 # <use name=MuonTest/MuonReco>
 
 <library file=TestTrackAssociator.cc name=testTrackingToolsTrackAssociator>
-  <flags EDM_PLUGIN=1>
+  <flags SEAL_PLUGIN_NAME="testTrackingToolsTrackAssociator">
 </library>
 <library file=CaloMatchingExample.cc name=testCaloMatchingExample>
-  <flags EDM_PLUGIN=1>
+  <flags SEAL_PLUGIN_NAME="testCaloMatchingExample">
 </library>
 # <library file=TestTrackAssociatorProducer.cc name=testTrackAssociatorProducer>
-#   <flags EDM_PLUGIN=1>
+#   <flags SEAL_PLUGIN_NAME="testTrackAssociatorProducer">
 # </library>
 # <library file=TestMuonProducer.cc name=testMuonProducer>
-#   <flags EDM_PLUGIN=1>
+#   <flags SEAL_PLUGIN_NAME="testMuonProducer">
 # </library>
 # <library file=MuonIdProducer.cc name=muonIdProducer>
-#   <flags EDM_PLUGIN=1>
+#   <flags SEAL_PLUGIN_NAME="muonIdProducer">
 # </library>
 
 # add debug symbols

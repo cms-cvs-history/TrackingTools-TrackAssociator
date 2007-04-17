@@ -1,5 +1,5 @@
 # -*-SH-*-
-<flags EDM_PLUGIN=1>
+<flags SEAL_PLUGIN_NAME="TrackingToolsTrackAssociator">
 <use name=clhep>
 <use name=DataFormats/Common>
 <use name=DataFormats/TrackReco>
@@ -8,7 +8,7 @@
 <use name=Utilities/Timing>
 
 <use name=FWCore/Framework>
-<use name=FWCore/PluginManager>
+<use name=Foundation/PluginManager>
 <use name=FWCore/ParameterSet>
 
 <use name=Geometry/DTGeometry>

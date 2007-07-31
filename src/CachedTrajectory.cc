@@ -3,7 +3,7 @@
 // Package:    TrackAssociator
 // Class:      CachedTrajectory
 // 
-// $Id: CachedTrajectory.cc,v 1.3 2007/01/30 18:40:01 dmytro Exp $
+// $Id: CachedTrajectory.cc,v 1.4 2007/02/07 04:32:40 dmytro Exp $
 //
 //
 
@@ -220,7 +220,11 @@ void CachedTrajectory::getTrajectory(std::vector<SteppingHelixStateInfo>& trajec
 				     const float step)
 {
    if ( ! fullTrajectoryFilled_ ) throw cms::Exception("FatalError") << "trajectory is not defined yet. Please use propagateAll first.";
-	
+   if ( fullTrajectory_.empty() ) {	
+      LogTrace("TrackAssociator") << "Trajectory is empty. Move on";
+      return;
+   }
+   
    if (r1>r2 || z1>z2) {
       LogTrace("TrackAssociator") << "no trajectory is expected to be found since either R1>R2 or L1>L2";
       return;

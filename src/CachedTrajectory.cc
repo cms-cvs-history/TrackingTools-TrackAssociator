@@ -3,7 +3,7 @@
 // Package:    TrackAssociator
 // Class:      CachedTrajectory
 // 
-// $Id: CachedTrajectory.cc,v 1.6 2007/03/26 05:48:27 dmytro Exp $
+// $Id: CachedTrajectory.cc,v 1.7 2007/04/02 17:26:02 dmytro Exp $
 //
 //
 
@@ -239,7 +239,10 @@ void CachedTrajectory::getTrajectory(std::vector<SteppingHelixStateInfo>& trajec
 				     int steps)
 {
    if ( ! fullTrajectoryFilled_ ) throw cms::Exception("FatalError") << "trajectory is not defined yet. Please use propagateAll first.";
-   if ( fullTrajectory_.empty() ) edm::LogWarning("TrackAssociator") << "full cached trajectory is empty. This doesn't make sense";
+   if ( fullTrajectory_.empty() ) {
+      LogTrace("TrackAssociator") << "Trajectory is empty. Move on";
+      return;
+   }
 	
    if ( ! volume.isValid() ) {
       LogTrace("TrackAssociator") << "no trajectory is expected to be found since the fiducial volume is not valid";

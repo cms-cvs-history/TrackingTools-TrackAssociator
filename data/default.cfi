@@ -35,6 +35,8 @@ PSet TrackAssociatorParameters =
       double dRMuon = 9999
       double muonMaxDistanceX = 5
       double muonMaxDistanceY = 5
+      double muonMaxDistanceSigmaX = 5
+      double muonMaxDistanceSigmaY = 5
       
       ### association types
       bool useEcal = true      # RecoHits

@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.cc,v 1.10 2007/03/26 05:48:27 dmytro Exp $
+// $Id: TrackDetectorAssociator.cc,v 1.11 2007/04/02 17:36:54 dmytro Exp $
 //
 //
 
@@ -88,7 +88,7 @@
 #include "SimDataFormats/CaloHit/interface/PCaloHit.h"
 #include "SimDataFormats/CaloHit/interface/PCaloHitContainer.h"
 
-#include "HepPDT/ParticleID.hh"
+#include "CLHEP/HepPDT/ParticleID.hh"
 
 using namespace reco;
 

@@ -14,7 +14,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.h,v 1.8 2007/04/13 03:09:27 dmytro Exp $
+// $Id: TrackDetectorAssociator.h,v 1.9 2007/05/16 09:26:23 dmytro Exp $
 //
 //
 
@@ -34,6 +34,7 @@
 #include "TrackingTools/TrackAssociator/interface/MuonDetIdAssociator.h"
 #include "TrackingTools/TrackAssociator/interface/HcalDetIdAssociator.h"
 #include "TrackingTools/TrackAssociator/interface/HODetIdAssociator.h"
+
 #include "TrackingTools/TrackAssociator/interface/TrackDetMatchInfo.h"
 #include "TrackingTools/TrackAssociator/interface/CachedTrajectory.h"
 
@@ -204,11 +205,11 @@ class TrackDetectorAssociator {
    CachedTrajectory cachedTrajectory_;
    bool useDefaultPropagator_;
    
-   EcalDetIdAssociator ecalDetIdAssociator_;
-   HcalDetIdAssociator hcalDetIdAssociator_;
-   HODetIdAssociator   hoDetIdAssociator_;
-   CaloDetIdAssociator caloDetIdAssociator_;
-   MuonDetIdAssociator muonDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator> ecalDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator> hcalDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator>   hoDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator> caloDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator> muonDetIdAssociator_;
    
    edm::ESHandle<CaloGeometry> theCaloGeometry_;
    edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;

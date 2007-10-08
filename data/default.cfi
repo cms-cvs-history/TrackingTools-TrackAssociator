@@ -45,4 +45,6 @@ PSet TrackAssociatorParameters =
       bool useHO = true	       # RecoHits
       bool useMuon = true      # RecoHits
       bool truthMatch = false  # debugging information
+      
+      string crossedEnergyType = "SinglePointAlongTrajectory"
 }

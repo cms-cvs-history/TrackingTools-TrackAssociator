@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.cc,v 1.26 2007/10/09 02:38:18 dmytro Exp $
+// $Id: TrackDetectorAssociator.cc,v 1.27 2007/12/13 07:35:52 dmytro Exp $
 //
 //
 
@@ -266,6 +266,11 @@ void TrackDetectorAssociator::fillEcal( const edm::Event& iEvent,
    timers.push("TrackDetectorAssociator::fillEcal");
    
    const std::vector<SteppingHelixStateInfo>& trajectoryStates = cachedTrajectory_.getEcalTrajectory();
+   
+   for(std::vector<SteppingHelixStateInfo>::const_iterator itr = trajectoryStates.begin();
+       itr != trajectoryStates.end(); itr++) 
+     LogTrace("TrackAssociator") << "ECAL trajectory point (rho, z, phi): " << itr->position().perp() <<
+     ", " << itr->position().z() << ", " << itr->position().phi();
 
    std::vector<GlobalPoint> coreTrajectory;
    std::vector<GlobalPoint> trajectoryWithErrors;
@@ -1007,16 +1012,54 @@ TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
    iSetup.get<IdealMagneticFieldRecord>().get(bField);
 
    if(track.extra().isNull()) {
+      if ( parameters.propagateAllDirections ) 
+	throw cms::Exception("FatalError") << 
+	"All direction propagation is requested, but no TrackExtra information is available.\n" <<
+	"Either change the parameter or provide needed data!\n";
      LogTrace("TrackAssociator") << "Track Extras not found\n";
      FreeTrajectoryState initialState = tsTransform.initialFreeState(track,&*bField);
      return associate(iEvent, iSetup, parameters, &initialState); // 5th argument is null pointer
    }
-   else {
-     LogTrace("TrackAssociator") << "Track Extras found\n";
-     FreeTrajectoryState innerState = tsTransform.innerFreeState(track,&*bField);
-     FreeTrajectoryState outerState = tsTransform.outerFreeState(track,&*bField);
+   
+   LogTrace("TrackAssociator") << "Track Extras found\n";
+   FreeTrajectoryState innerState = tsTransform.innerFreeState(track,&*bField);
+   FreeTrajectoryState outerState = tsTransform.outerFreeState(track,&*bField);
+   
+   LogTrace("TrackAssociator") << "inner track state (rho, z, phi):" << 
+     track.innerPosition().Rho() << ", " << track.innerPosition().z() <<
+     ", " << track.innerPosition().phi() << "\n";
+   LogTrace("TrackAssociator") << "innerFreeState (rho, z, phi):" << 
+     innerState.position().perp() << ", " << innerState.position().z() <<
+     ", " << innerState.position().phi() << "\n";
+   
+   LogTrace("TrackAssociator") << "outer track state (rho, z, phi):" << 
+     track.outerPosition().Rho() << ", " << track.outerPosition().z() <<
+     ", " << track.outerPosition().phi() << "\n";
+   LogTrace("TrackAssociator") << "innerFreeState (rho, z, phi):" << 
+     outerState.position().perp() << ", " << outerState.position().z() <<
+     ", " << outerState.position().phi() << "\n";
+   
+   // assume that we deal with a track moving inside-out with proper ordering of states.
+   if ( ! parameters.propagateAllDirections )
      return associate(iEvent, iSetup, parameters, &innerState, &outerState);
-   }
+   
+   double currentStepSize = cachedTrajectory_.getPropagationStep();
+   
+   // check if we deal with clear outside-in case
+   if ( track.innerPosition().Dot( track.innerMomentum() ) < 0 &&
+	track.outerPosition().Dot( track.outerMomentum() ) < 0 )
+     {
+	cachedTrajectory_.setPropagationStep( -fabs(currentStepSize) );
+	TrackDetMatchInfo result;
+	if ( track.innerPosition().R() < track.outerPosition().R() )
+	  result = associate(iEvent, iSetup, parameters, &innerState, &outerState);
+	else
+	  result = associate(iEvent, iSetup, parameters, &outerState, &innerState);
+	cachedTrajectory_.setPropagationStep( currentStepSize );
+	return result;
+     }
+   
+   return associate(iEvent, iSetup, parameters, &innerState, &outerState);
 }
 
 TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,

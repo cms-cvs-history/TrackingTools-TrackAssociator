@@ -3,7 +3,7 @@
 // Package:    TrackAssociator
 // Class:      CachedTrajectory
 // 
-// $Id: CachedTrajectory.cc,v 1.14 2007/10/08 11:23:34 dmytro Exp $
+// $Id: CachedTrajectory.cc,v 1.15 2007/12/21 01:33:40 gpetrucc Exp $
 //
 //
 
@@ -86,14 +86,17 @@ bool CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
    SteppingHelixStateInfo currentState(initialState);
 
    while (currentState.position().perp()<maxRho_ && fabs(currentState.position().z())<maxZ_ ){
-     LogTrace("TrackAssociator") << "[propagateAll] Propagated outward from (Rho, z) (" << currentState.position().perp()
-       << "," << currentState.position().z() << ") to (";
-     propagateForward(currentState,step_);
+      LogTrace("TrackAssociator") << "[propagateAll] Propagate outward from (rho, r, z, phi) (" << 
+	currentState.position().perp() << ", " << currentState.position().mag() << ", " <<
+	currentState.position().z() << ", " << currentState.position().phi() << ")";
+      propagateForward(currentState,step_);
      if (! currentState.isValid() ) {
        LogTrace("TrackAssociator") << "Failed to propagate the track; moving on\n";
        break;
      }
-     LogTrace("TrackAssociator") << currentState.position().perp() << ", " << currentState.position().z() << ")\n";
+      LogTrace("TrackAssociator") << "\treached (rho, r, z, phi) (" << 
+	currentState.position().perp() << ", " << currentState.position().mag() << ", " <<
+	currentState.position().z() << ", " << currentState.position().phi() << ")";
      fullTrajectory_.push_back(currentState);
    }
 
@@ -111,9 +114,11 @@ bool CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
 	 LogTrace("TrackAssociator") << "Error: TrackAssociator has propogated the particle past the point of closest approach to IP" << std::endl;
 	 break;
       }
-      LogTrace("TrackAssociator") << "[propagateAll] Propagated inward from (Rho, z) (" << previousState.position().perp()
-	<< "," << previousState.position().z() << ") to (";
-      LogTrace("TrackAssociator") << currentState2.position().perp() << ", " << currentState2.position().z() << ")\n";
+      LogTrace("TrackAssociator") << "[propagateAll] Propagated inward from (rho, r, z, phi) (" << 
+	previousState.position().perp() << ", " << previousState.position().mag() << ", " <<
+	previousState.position().z() << "," << previousState.position().phi() << ") to (" << 
+	currentState2.position().perp() << ", " << currentState2.position().mag() << ", " <<
+	currentState2.position().z() << ", " << currentState2.position().phi() << ")";
       fullTrajectory_.push_front(currentState2);
    }
 
@@ -339,6 +344,11 @@ void CachedTrajectory::getTrajectory(std::vector<SteppingHelixStateInfo>& trajec
    if (closestPointOnLeft == -1) throw cms::Exception("FatalError") << "This shouls never happen - internal logic error";
    
    SteppingHelixStateInfo currentState(fullTrajectory_[closestPointOnLeft]);
+   if ( currentState.position().x()*currentState.momentum().x() +
+	currentState.position().y()*currentState.momentum().y() +
+	currentState.position().z()*currentState.momentum().z() < 0 )
+     step = -step;
+   
    while (currentState.position().perp() < volume.maxR() && fabs(currentState.position().z()) < volume.maxZ() )
      {
 	propagateForward(currentState,step);

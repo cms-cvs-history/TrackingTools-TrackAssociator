@@ -3,13 +3,13 @@
 // Package:    TrackAssociator
 // Class:      CachedTrajectory
 // 
-// $Id: CachedTrajectory.cc,v 1.13.4.1 2007/10/08 10:28:18 dmytro Exp $
+// $Id: CachedTrajectory.cc,v 1.16 2008/03/31 13:31:42 dmytro Exp $
 //
 //
 
 
 #include "TrackingTools/TrackAssociator/interface/CachedTrajectory.h"
-#include "Utilities/Timing/interface/TimerStack.h"
+// #include "Utilities/Timing/interface/TimerStack.h"
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "DataFormats/GeometrySurface/interface/Plane.h"
 #include "Geometry/DTGeometry/interface/DTChamber.h"
@@ -50,7 +50,9 @@ void CachedTrajectory::propagateForward(SteppingHelixStateInfo& state, float dis
 	try {
 	   state = shp->propagate(state, *target);
 	}
-	catch(...){
+	catch(cms::Exception &ex){
+           edm::LogWarning("TrackAssociator") << 
+                "Caught exception " << ex.category() << ": " << ex.explainSelf();
 	   edm::LogWarning("TrackAssociator") << "An exception is caught during the track propagation\n"
 	     << state.momentum().x() << ", " << state.momentum().y() << ", " << state.momentum().z();
 	   state = SteppingHelixStateInfo();
@@ -77,7 +79,7 @@ bool CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
       reset_trajectory();
    }
 	
-   TimerStack timers(TimerStack::Disableable);
+//   TimerStack timers(TimerStack::Disableable);
 
    reset_trajectory();
    if (propagator_==0) throw cms::Exception("FatalError") << "Track propagator is not defined\n";
@@ -135,10 +137,10 @@ bool CachedTrajectory::propagateAll(const SteppingHelixStateInfo& initialState)
 
 TrajectoryStateOnSurface CachedTrajectory::propagate(const Plane* plane)
 {
-   TimerStack timers(TimerStack::Disableable);
+   // TimerStack timers(TimerStack::Disableable);
    // timers.benchmark("CachedTrajectory::propagate::benchmark");
-   timers.push("CachedTrajectory::propagate",TimerStack::FastMonitoring);
-   timers.push("CachedTrajectory::propagate::findClosestPoint",TimerStack::FastMonitoring);
+   // timers.push("CachedTrajectory::propagate",TimerStack::FastMonitoring);
+   // timers.push("CachedTrajectory::propagate::findClosestPoint",TimerStack::FastMonitoring);
 
    // Assume that all points along the trajectory are equally spread out.
    // For simplication assume that the trajectory is just a straight
@@ -195,14 +197,16 @@ TrajectoryStateOnSurface CachedTrajectory::propagate(const Plane* plane)
         << plane->position().phi();
      
    // propagate to the plane
-   timers.pop_and_push("CachedTrajectory::propagate::localPropagation",TimerStack::FastMonitoring);
+   // timers.pop_and_push("CachedTrajectory::propagate::localPropagation",TimerStack::FastMonitoring);
    if (const SteppingHelixPropagator* shp = dynamic_cast<const SteppingHelixPropagator*>(propagator_))
      {
 	SteppingHelixStateInfo state;
 	try { 
 	   state = shp->propagate(fullTrajectory_[closestPointOnLeft], *plane);
 	}
-	catch(...){
+	catch(cms::Exception &ex){
+           edm::LogWarning("TrackAssociator") << 
+                "Caught exception " << ex.category() << ": " << ex.explainSelf();
 	   edm::LogWarning("TrackAssociator") << "An exception is caught during the track propagation\n"
 	     << state.momentum().x() << ", " << state.momentum().y() << ", " << state.momentum().z();
 	   return TrajectoryStateOnSurface();
@@ -372,7 +376,7 @@ const std::vector<SteppingHelixStateInfo>& CachedTrajectory::getEcalTrajectory()
 
 void CachedTrajectory::findHcalTrajectory( const FiducialVolume& volume ) {
    LogTrace("TrackAssociator") << "getting trajectory in HCAL";
-   getTrajectory(hcalTrajectory_, volume, 4 );
+   getTrajectory(hcalTrajectory_, volume, 20 ); // more steps to account for different depth
    LogTrace("TrackAssociator") << "# of points in HCAL trajectory:" << hcalTrajectory_.size();
 }
 

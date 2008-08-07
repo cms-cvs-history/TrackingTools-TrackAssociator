@@ -48,7 +48,9 @@ block TrackAssociatorParameterBlock = {
       bool truthMatch = false  # debugging information
       
       string crossedEnergyType = "SinglePointAlongTrajectory"
-  }
+      # string crossedEnergyType = "FivePointTwoSigmaElipseAlongTrajectory"
+      
+      bool propagateAllDirections = true
 }
 
 

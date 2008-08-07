@@ -51,6 +51,7 @@ block TrackAssociatorParameterBlock = {
       # string crossedEnergyType = "FivePointTwoSigmaElipseAlongTrajectory"
       
       bool propagateAllDirections = true
+   }
 }
 
 
@@ -96,4 +97,3 @@ block TrackAssociatorParameterBlock = {
 
       string crossedEnergyType = "SinglePointAlongTrajectory"
   }
-

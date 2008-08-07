@@ -13,7 +13,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.cc,v 1.27 2007/12/13 07:35:52 dmytro Exp $
+// $Id: TrackDetectorAssociator.cc,v 1.27.2.1 2008/05/22 23:21:54 dmytro Exp $
 //
 //
 
@@ -1005,16 +1005,18 @@ void TrackDetectorAssociator::fillCaloTruth( const edm::Event& iEvent,
 TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
 						      const edm::EventSetup& iSetup,
 						      const reco::Track& track,
-						      const AssociatorParameters& parameters)
+						      const AssociatorParameters& parameters,
+						      Direction direction /*= Any*/ )
 {
+   double currentStepSize = cachedTrajectory_.getPropagationStep();
    TrajectoryStateTransform tsTransform;
    edm::ESHandle<MagneticField> bField;
    iSetup.get<IdealMagneticFieldRecord>().get(bField);
 
    if(track.extra().isNull()) {
-      if ( parameters.propagateAllDirections ) 
+      if ( direction != InsideOut ) 
 	throw cms::Exception("FatalError") << 
-	"All direction propagation is requested, but no TrackExtra information is available.\n" <<
+	"No TrackExtra information is available and association is done with something else than InsideOut track.\n" <<
 	"Either change the parameter or provide needed data!\n";
      LogTrace("TrackAssociator") << "Track Extras not found\n";
      FreeTrajectoryState initialState = tsTransform.initialFreeState(track,&*bField);
@@ -1024,6 +1026,7 @@ TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
    LogTrace("TrackAssociator") << "Track Extras found\n";
    FreeTrajectoryState innerState = tsTransform.innerFreeState(track,&*bField);
    FreeTrajectoryState outerState = tsTransform.outerFreeState(track,&*bField);
+   FreeTrajectoryState referenceState = tsTransform.initialFreeState(track,&*bField);
    
    LogTrace("TrackAssociator") << "inner track state (rho, z, phi):" << 
      track.innerPosition().Rho() << ", " << track.innerPosition().z() <<
@@ -1035,30 +1038,59 @@ TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
    LogTrace("TrackAssociator") << "outer track state (rho, z, phi):" << 
      track.outerPosition().Rho() << ", " << track.outerPosition().z() <<
      ", " << track.outerPosition().phi() << "\n";
-   LogTrace("TrackAssociator") << "innerFreeState (rho, z, phi):" << 
+   LogTrace("TrackAssociator") << "outerFreeState (rho, z, phi):" << 
      outerState.position().perp() << ", " << outerState.position().z() <<
      ", " << outerState.position().phi() << "\n";
    
-   // assume that we deal with a track moving inside-out with proper ordering of states.
-   if ( ! parameters.propagateAllDirections )
-     return associate(iEvent, iSetup, parameters, &innerState, &outerState);
-   
-   double currentStepSize = cachedTrajectory_.getPropagationStep();
-   
-   // check if we deal with clear outside-in case
-   if ( track.innerPosition().Dot( track.innerMomentum() ) < 0 &&
-	track.outerPosition().Dot( track.outerMomentum() ) < 0 )
-     {
-	cachedTrajectory_.setPropagationStep( -fabs(currentStepSize) );
-	TrackDetMatchInfo result;
-	if ( track.innerPosition().R() < track.outerPosition().R() )
-	  result = associate(iEvent, iSetup, parameters, &innerState, &outerState);
-	else
-	  result = associate(iEvent, iSetup, parameters, &outerState, &innerState);
-	cachedTrajectory_.setPropagationStep( currentStepSize );
-	return result;
-     }
-   
+   // InsideOut first
+   if ( crossedIP( track ) ) {
+      switch ( direction ) {
+       case InsideOut:
+       case Any:
+	 return associate(iEvent, iSetup, parameters, &referenceState, &outerState);
+	 break;
+       case OutsideIn:
+	   {
+	      cachedTrajectory_.setPropagationStep( -fabs(currentStepSize) );
+	      TrackDetMatchInfo result = associate(iEvent, iSetup, parameters, &innerState, &referenceState);
+	      cachedTrajectory_.setPropagationStep( currentStepSize );
+	      return result;
+	      break;
+	   }
+      }
+   } else {
+      switch ( direction ) {
+       case InsideOut:
+	 return associate(iEvent, iSetup, parameters, &innerState, &outerState);
+	 break;
+       case OutsideIn:
+	   {
+	      cachedTrajectory_.setPropagationStep( -fabs(currentStepSize) );
+	      TrackDetMatchInfo result = associate(iEvent, iSetup, parameters, &innerState, &referenceState);
+	      cachedTrajectory_.setPropagationStep( currentStepSize );
+	      return result;
+	      break;
+	   }
+       case Any:
+	   {
+	      // check if we deal with clear outside-in case
+	      if ( track.innerPosition().Dot( track.innerMomentum() ) < 0 &&
+		   track.outerPosition().Dot( track.outerMomentum() ) < 0 )
+		{
+		   cachedTrajectory_.setPropagationStep( -fabs(currentStepSize) );
+		   TrackDetMatchInfo result;
+		   if ( track.innerPosition().R() < track.outerPosition().R() )
+		     result = associate(iEvent, iSetup, parameters, &innerState, &outerState);
+		   else
+		     result = associate(iEvent, iSetup, parameters, &outerState, &innerState);
+		   cachedTrajectory_.setPropagationStep( currentStepSize );
+		   return result;
+		}
+	   }
+      }
+   }
+	
+   // all other cases  
    return associate(iEvent, iSetup, parameters, &innerState, &outerState);
 }
 
@@ -1081,3 +1113,14 @@ TrackDetMatchInfo TrackDetectorAssociator::associate( const edm::Event& iEvent,
    return associate(iEvent, iSetup, getFreeTrajectoryState(iSetup, momentum, vertex, charge), parameters);
 }
 
+bool TrackDetectorAssociator::crossedIP( const reco::Track& track )
+{
+   bool crossed = true;
+   crossed &= (track.innerPosition().rho() > 3 ); // something close to active volume
+   crossed &= (track.outerPosition().rho() > 3 ); // something close to active volume
+   crossed &=  ( ( track.innerPosition().x()*track.innerMomentum().x() +
+		   track.innerPosition().y()*track.innerMomentum().y() < 0 ) !=
+		 ( track.outerPosition().x()*track.outerMomentum().x() + 
+		   track.outerPosition().y()*track.outerMomentum().y() < 0 ) );
+   return crossed;
+}

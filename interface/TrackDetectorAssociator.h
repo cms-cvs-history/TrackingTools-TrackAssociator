@@ -14,7 +14,7 @@
 //
 // Original Author:  Dmytro Kovalskyi
 //         Created:  Fri Apr 21 10:59:41 PDT 2006
-// $Id: TrackDetectorAssociator.h,v 1.14 2008/08/07 02:06:23 dmytro Exp $
+// $Id: TrackDetectorAssociator.h,v 1.15 2009/03/15 04:22:17 dmytro Exp $
 //
 //
 
@@ -141,6 +141,10 @@ class TrackDetectorAssociator {
 			TrackDetMatchInfo&,
 			const AssociatorParameters&);
   
+   void fillPreshower(  const edm::Event& iEvent,
+		        TrackDetMatchInfo& info,
+		        const AssociatorParameters&);
+   
    void fillMuon(       const edm::Event&,
 			TrackDetMatchInfo&,
 			const AssociatorParameters&);
@@ -188,6 +192,7 @@ class TrackDetectorAssociator {
    edm::ESHandle<DetIdAssociator>   hoDetIdAssociator_;
    edm::ESHandle<DetIdAssociator> caloDetIdAssociator_;
    edm::ESHandle<DetIdAssociator> muonDetIdAssociator_;
+   edm::ESHandle<DetIdAssociator> preshowerDetIdAssociator_;
    
    edm::ESHandle<CaloGeometry> theCaloGeometry_;
    edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;

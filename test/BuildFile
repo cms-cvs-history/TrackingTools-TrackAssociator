@@ -1,6 +1,6 @@
 # -*-SH-*-
 <use name=clhep>
-
+<use name=Utilities/Timing>
 <use name=DataFormats/Common>
 <use name=DataFormats/TrackReco>
 <use name=DataFormats/EgammaReco>
